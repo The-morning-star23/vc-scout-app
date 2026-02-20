@@ -1,14 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { mockCompanies } from "@/data/mockCompanies";
-import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, BookmarkPlus } from "lucide-react";
 import Link from "next/link";
 
-export default function CompaniesPage() {
-  const [search, setSearch] = useState("");
+function CompaniesContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  
+  const [search, setSearch] = useState(initialSearch);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      if (initialSearch) setSearch(initialSearch);
+    });
+  }, [initialSearch]);
+
+  const handleSaveSearch = () => {
+    if (!search.trim()) return alert("Please enter a search term first.");
+    
+    const existing = localStorage.getItem("vc-saved-searches");
+    const searches = existing ? JSON.parse(existing) : [];
+    
+    const newSearch = {
+      id: Date.now().toString(),
+      query: search,
+      date: new Date().toLocaleDateString()
+    };
+    
+    localStorage.setItem("vc-saved-searches", JSON.stringify([newSearch, ...searches]));
+    alert(`Search for "${search}" saved!`);
+  };
 
   const filteredCompanies = mockCompanies.filter((company) =>
     company.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -32,10 +58,20 @@ export default function CompaniesPage() {
             type="text"
             placeholder="Search companies or descriptions..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        <button 
+          onClick={handleSaveSearch}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+        >
+          <BookmarkPlus size={18} />
+          <span>Save Search</span>
+        </button>
         <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700">
           <Filter size={18} />
           <span>Filter</span>
@@ -108,5 +144,13 @@ export default function CompaniesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CompaniesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-gray-500">Loading companies...</div>}>
+      <CompaniesContent />
+    </Suspense>
   );
 }
