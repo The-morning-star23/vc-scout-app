@@ -1,34 +1,34 @@
 export const mockCompanies = [
   {
     id: "1",
-    name: "Acme AI",
-    domain: "acme.ai",
-    description: "AI-powered logistics",
-    signals: ["Hiring engineering", "Recent Series A"],
-    addedAt: "2026-02-15"
+    name: "Harmonic",
+    domain: "harmonic.ai",
+    description: "Startup discovery network",
+    signals: ["Team expanded", "New integration"],
+    addedAt: "2026-02-20"
   },
   {
     id: "2",
-    name: "Nexus Health",
-    domain: "nexushealth.dev",
-    description: "B2B healthcare infrastructure",
+    name: "Cardinal",
+    domain: "trycardinal.ai",
+    description: "Thesis-oriented scouting",
     signals: ["New product launch", "SOC2 Compliance"],
     addedAt: "2026-02-18"
   },
   {
     id: "3",
-    name: "Quantum Dynamics",
-    domain: "quantum.io",
-    description: "Quantum computing APIs",
-    signals: ["Seed round rumors", "Careers page updated"],
-    addedAt: "2026-02-19"
+    name: "Vercel",
+    domain: "vercel.com",
+    description: "Frontend cloud platform",
+    signals: ["Hiring engineering", "Recent Series D"],
+    addedAt: "2026-02-15"
   },
   {
     id: "4",
-    name: "Harmonic Inspiration",
-    domain: "harmonic.ai",
-    description: "Startup discovery network",
-    signals: ["Team expanded", "New integration"],
-    addedAt: "2026-02-20"
+    name: "OpenAI",
+    domain: "openai.com",
+    description: "AI research and deployment",
+    signals: ["New models released", "Careers page updated"],
+    addedAt: "2026-02-19"
   }
 ];
