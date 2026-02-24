@@ -11,7 +11,7 @@ A precision AI scout designed for venture capital workflows. This platform relia
 - Author
 
 ## 🚀 Live Demo
-**[INSERT YOUR VERCEL URL HERE]**
+- https://vc-scout-app.vercel.app
 
 ## 💻 Tech Stack
 - **Framework:** Next.js 15 (App Router)
@@ -67,7 +67,7 @@ npm install
 Create a `.env` file in the root directory and add the following keys. The API key is securely consumed server-side and never exposed to the browser.
 
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
