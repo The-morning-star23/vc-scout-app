@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { mockCompanies } from "@/data/mockCompanies";
-import { Search, Filter, ChevronLeft, ChevronRight, BookmarkPlus, TrendingUp } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, BookmarkPlus, TrendingUp, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 
 function CompaniesContent() {
@@ -12,6 +12,7 @@ function CompaniesContent() {
   
   const [search, setSearch] = useState(initialSearch);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: "addedAt", direction: "desc" });
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -36,14 +37,34 @@ function CompaniesContent() {
     alert(`Search for "${search}" saved!`);
   };
 
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
   const filteredCompanies = mockCompanies.filter((company) =>
     company.name.toLowerCase().includes(search.toLowerCase()) ||
     company.description.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage);
+  const sortedCompanies = [...filteredCompanies].sort((a, b) => {
+    if (sortConfig.key === "name") {
+      return sortConfig.direction === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+    } else if (sortConfig.key === "addedAt") {
+      return sortConfig.direction === "asc"
+        ? a.addedAt.localeCompare(b.addedAt)
+        : b.addedAt.localeCompare(a.addedAt);
+    }
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedCompanies.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCompanies = filteredCompanies.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedCompanies = sortedCompanies.slice(startIndex, startIndex + itemsPerPage);
 
   const getBadgeColor = (index: number) => {
     const colors = [
@@ -100,10 +121,18 @@ function CompaniesContent() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/80 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              <th className="px-6 py-4">Company</th>
+              <th className="px-6 py-4">
+                <button onClick={() => handleSort("name")} className="flex items-center gap-1 hover:text-indigo-600 transition-colors uppercase">
+                  Company <ArrowUpDown size={14} />
+                </button>
+              </th>
               <th className="px-6 py-4">Intelligence</th>
               <th className="px-6 py-4">Recent Signals</th>
-              <th className="px-6 py-4 text-right">Added</th>
+              <th className="px-6 py-4 text-right">
+                <button onClick={() => handleSort("addedAt")} className="flex items-center justify-end gap-1 hover:text-indigo-600 transition-colors uppercase w-full">
+                  Added <ArrowUpDown size={14} />
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -133,7 +162,7 @@ function CompaniesContent() {
           </tbody>
         </table>
         
-        {filteredCompanies.length === 0 && (
+        {sortedCompanies.length === 0 && (
           <div className="p-12 text-center flex flex-col items-center justify-center">
             <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
               <Search className="text-slate-400" size={24} />
@@ -147,7 +176,7 @@ function CompaniesContent() {
       {totalPages > 1 && (
         <div className="flex justify-between items-center text-sm font-medium text-slate-600 bg-white p-4 ring-1 ring-slate-200 shadow-sm rounded-xl">
           <span>
-            Showing <span className="text-slate-900">{startIndex + 1}</span> to <span className="text-slate-900">{Math.min(startIndex + itemsPerPage, filteredCompanies.length)}</span> of <span className="text-slate-900">{filteredCompanies.length}</span> results
+            Showing <span className="text-slate-900">{startIndex + 1}</span> to <span className="text-slate-900">{Math.min(startIndex + itemsPerPage, sortedCompanies.length)}</span> of <span className="text-slate-900">{sortedCompanies.length}</span> results
           </span>
           <div className="flex gap-2">
             <button 
