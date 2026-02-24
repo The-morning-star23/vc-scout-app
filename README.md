@@ -52,7 +52,7 @@ To ensure production-grade security, the AI enrichment pipeline is entirely hand
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/vc-scout-app.git
+git clone https://github.com/The-morning-star23/vc-scout-app.git
 cd vc-scout-app
 ```
 
