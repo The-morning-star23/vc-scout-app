@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VC Scout — Intelligence Interface & Live Enrichment
 
-## Getting Started
+A precision AI scout designed for venture capital workflows. This platform reliably turns a fund's unique thesis into an always-on discovery workflow, reducing noise and surfacing high-signal companies earlier.
 
-First, run the development server:
+## Table of Contents
+- Live Demo
+- Tech Stack
+- Core Features Implemented
+- Architecture & Security
+- Local Setup Instructions
+- Author
+
+## 🚀 Live Demo
+**[INSERT YOUR VERCEL URL HERE]**
+
+## 💻 Tech Stack
+- **Framework:** Next.js 15 (App Router)
+- **Styling:** Tailwind CSS, Lucide React Icons
+- **Data Fetching:** Cheerio (HTML Parsing), OpenAI API
+- **State Management:** React Hooks + localStorage
+- **Deployment:** Vercel
+
+## ✨ Core Features Implemented
+
+This MVP fulfills all core testing requirements and minimum app scope:
+
+- **Premium App Shell:** Responsive layout featuring sidebar navigation and global search.
+- **Deal Flow Table (/companies):** Fully sortable and paginated data table with search and filtering capabilities.
+- **Company Profiles (/companies/[id]):** Detailed views containing company overviews, captured signals, analyst notes, and list management.
+- **List Management (/lists):** Create custom lists, manage saved startups, and export data directly to JSON.
+- **Saved Searches (/saved):** Persist specific search queries to rerun workflows quickly.
+- **Live AI Enrichment Endpoint:** A secure, server-side API route (`/api/enrich`) that scrapes public domains on-demand. It extracts:
+  - 1-2 sentence AI summary
+  - 3-6 bullet points on what they do
+  - 5-10 targeted keywords
+  - 2-4 derived signals inferred from the page content
+  - Exact source URLs with timestamps
+
+## 🔒 Architecture & Security
+
+To ensure production-grade security, the AI enrichment pipeline is entirely handled via a server-side route (`/api/enrich`).
+
+1. The frontend passes a domain name to the server.
+2. The server safely uses `cheerio` to fetch and parse the public HTML text.
+3. The server communicates with the OpenAI API using hidden environment keys.
+4. The structured JSON is returned to the client and cached locally to prevent redundant API calls on subsequent visits.
+
+## 🛠️ Local Setup Instructions
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/vc-scout-app.git
+cd vc-scout-app
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Configure Environment Variables:
+
+Create a `.env` file in the root directory and add the following keys. The API key is securely consumed server-side and never exposed to the browser.
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 👤 Author
+**Shubh Kumar**
