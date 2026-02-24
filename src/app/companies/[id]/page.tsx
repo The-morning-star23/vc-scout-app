@@ -17,13 +17,16 @@ interface Company {
 export default function CompanyProfile({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const company = mockCompanies.find((c) => c.id === resolvedParams.id);
+  
   const [listName, setListName] = useState("");
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichmentData, setEnrichmentData] = useState<any>(null);
+  const [error, setError] = useState("");
 
   if (!company) return <div className="p-12 text-center text-slate-500 font-medium">Startup not found in deal flow.</div>;
 
   const handleSaveToList = () => {
     if (!listName.trim()) return;
-    
     const existing = localStorage.getItem("vc-lists");
     const lists = existing ? JSON.parse(existing) : {};
     
@@ -36,6 +39,27 @@ export default function CompanyProfile({ params }: { params: Promise<{ id: strin
       alert(`${company.name} is already in ${listName}`);
     }
     setListName("");
+  };
+
+  const handleEnrich = async () => {
+    setIsEnriching(true);
+    setError("");
+    try {
+      const res = await fetch("/api/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: company.domain }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch data");
+      
+      setEnrichmentData(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsEnriching(false);
+    }
   };
 
   const getBadgeColor = (index: number) => {
@@ -56,7 +80,6 @@ export default function CompanyProfile({ params }: { params: Promise<{ id: strin
         <span>Back to Deal Flow</span>
       </Link>
 
-      {/* Header Card */}
       <div className="bg-white ring-1 ring-slate-200 shadow-sm rounded-2xl p-8 flex justify-between items-start">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -71,14 +94,17 @@ export default function CompanyProfile({ params }: { params: Promise<{ id: strin
           <p className="text-slate-700 text-lg max-w-2xl">{company.description}</p>
         </div>
         
-        <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all shadow-sm shadow-indigo-200 ring-1 ring-inset ring-indigo-700">
+        <button 
+          onClick={handleEnrich}
+          disabled={isEnriching}
+          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-semibold transition-all shadow-sm shadow-indigo-200 ring-1 ring-inset ring-indigo-700"
+        >
           <Sparkles size={18} className="text-indigo-100" />
-          <span>Enrich Profile</span>
+          <span>{isEnriching ? "Scraping..." : "Enrich Profile"}</span>
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-8">
-        {/* Main Content Column */}
         <div className="col-span-2 space-y-8">
           <div className="bg-white ring-1 ring-slate-200 shadow-sm rounded-2xl p-8">
             <div className="flex items-center gap-2 mb-6">
@@ -86,20 +112,85 @@ export default function CompanyProfile({ params }: { params: Promise<{ id: strin
               <h2 className="text-xl font-bold text-slate-900">Live Enrichment Data</h2>
             </div>
             
-            {/* Empty State for Enrichment */}
-            <div className="p-12 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50">
-              <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center mb-4 ring-1 ring-indigo-100">
-                <Sparkles className="text-indigo-500" size={24} />
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 text-red-700 ring-1 ring-red-200 rounded-xl text-sm font-medium">
+                {error}
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">No intelligence gathered yet</h3>
-              <p className="text-slate-500 max-w-sm">Click &quot;Enrich Profile&quot; to trigger the AI scraper and fetch live signals, keywords, and summaries from the public web.</p>
-            </div>
+            )}
+
+            {!enrichmentData && !isEnriching && (
+              <div className="p-12 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50">
+                <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center mb-4 ring-1 ring-indigo-100">
+                  <Sparkles className="text-indigo-500" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">No intelligence gathered yet</h3>
+                <p className="text-slate-500 max-w-sm">Click "Enrich Profile" to trigger the AI scraper and fetch live signals, keywords, and summaries from the public web.</p>
+              </div>
+            )}
+
+            {isEnriching && (
+              <div className="p-12 flex flex-col items-center justify-center text-center">
+                <div className="h-10 w-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                <h3 className="text-lg font-bold text-slate-900">Scraping & Analyzing...</h3>
+                <p className="text-slate-500 text-sm mt-1">Fetching live data from {company.domain}</p>
+              </div>
+            )}
+
+            {enrichmentData && !isEnriching && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">AI Summary</h3>
+                  <p className="text-slate-800 font-medium leading-relaxed">{enrichmentData.summary}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">What They Do</h3>
+                  <ul className="space-y-2">
+                    {enrichmentData.whatTheyDo.map((item: string, i: number) => (
+                       <li key={i} className="flex gap-2 text-slate-700">
+                         <span className="text-indigo-500 font-bold">•</span> {item}
+                       </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Keywords</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {enrichmentData.keywords.map((kw: string, i: number) => (
+                       <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md">
+                         {kw}
+                       </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Derived Signals</h3>
+                  <ul className="space-y-2">
+                    {enrichmentData.derivedSignals.map((item: string, i: number) => (
+                       <li key={i} className="flex gap-2 text-slate-700">
+                         <span className="text-emerald-500 font-bold">↳</span> {item}
+                       </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Sources</h3>
+                  {enrichmentData.sources.map((src: any, i: number) => (
+                    <div key={i} className="text-xs text-slate-500 flex justify-between">
+                      <a href={src.url} target="_blank" rel="noreferrer" className="text-indigo-500 hover:underline">{src.url}</a>
+                      <span>{new Date(src.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Sidebar Column */}
         <div className="col-span-1 space-y-8">
-          {/* Signals Card */}
           <div className="bg-white ring-1 ring-slate-200 shadow-sm rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-4">
               <Activity className="text-slate-400" size={18} />
@@ -114,7 +205,6 @@ export default function CompanyProfile({ params }: { params: Promise<{ id: strin
             </div>
           </div>
 
-          {/* Save to List Card */}
           <div className="bg-slate-900 shadow-sm rounded-2xl p-6 text-white">
             <h3 className="font-bold text-white mb-1">Add to List</h3>
             <p className="text-slate-400 text-sm mb-4">Organize your pipeline.</p>
